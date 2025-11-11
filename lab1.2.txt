@@ -1,0 +1,94 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>  // for isalnum()
+#include <string.h>
+
+#define MAX 100
+
+char stack[MAX];
+int top = -1;
+
+// Function to push an element onto the stack
+void push(char ch) {
+    if (top == MAX - 1) {
+        printf("Stack Overflow!\n");
+    } else {
+        stack[++top] = ch;
+    }
+}
+
+// Function to pop an element from the stack
+char pop() {
+    if (top == -1) {
+        printf("Stack Underflow!\n");
+        return -1;
+    } else {
+        return stack[top--];
+    }
+}
+
+// Function to get precedence of operators
+int precedence(char op) {
+    switch (op) {
+        case '+':
+        case '-': return 1;
+        case '*':
+        case '/': return 2;
+        default:  return 0;
+    }
+}
+
+// Function to check if a character is an operator
+int isOperator(char ch) {
+    return (ch == '+' || ch == '-' || ch == '*' || ch == '/');
+}
+
+// Function to convert infix to postfix
+void infixToPostfix(char infix[], char postfix[]) {
+    int i = 0, k = 0;
+    char ch;
+
+    while ((ch = infix[i++]) != '\0') {
+        if (isalnum(ch)) {
+            // Operand — directly add to postfix
+            postfix[k++] = ch;
+        }
+        else if (ch == '(') {
+            push(ch);
+        }
+        else if (ch == ')') {
+            // Pop until '(' is encountered
+            while (top != -1 && stack[top] != '(') {
+                postfix[k++] = pop();
+            }
+            pop(); // Remove '(' from stack
+        }
+        else if (isOperator(ch)) {
+            // Pop operators of higher or equal precedence
+            while (top != -1 && precedence(stack[top]) >= precedence(ch)) {
+                postfix[k++] = pop();
+            }
+            push(ch);
+        }
+    }
+
+    // Pop remaining operators
+    while (top != -1) {
+        postfix[k++] = pop();
+    }
+
+    postfix[k] = '\0'; // Null terminate postfix expression
+}
+
+int main() {
+    char infix[MAX], postfix[MAX];
+
+    printf("Enter a valid parenthesized infix expression: ");
+    scanf("%s", infix);
+
+    infixToPostfix(infix, postfix);
+
+    printf("Postfix Expression: %s\n", postfix);
+
+    return 0;
+}
